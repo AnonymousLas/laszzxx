@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>laszzx | Red Team</title>
+    
+    <!-- Favicon personalizado - Skull Hacker (solo uno) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff0044'%3E%3Cpath d='M12,2A9,9 0 0,0 3,11V20H6V18H9V20H12V18H15V20H18V18H21V11A9,9 0 0,0 12,2M8,11A2,2 0 0,1 10,13A2,2 0 0,1 8,15A2,2 0 0,1 6,13A2,2 0 0,1 8,11M16,11A2,2 0 0,1 18,13A2,2 0 0,1 16,15A2,2 0 0,1 14,13A2,2 0 0,1 16,11M12,20C9,20 7,18 7,16H17C17,18 15,20 12,20Z'/%3E%3C/svg%3E">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary: #ff0044;
+            --bg-deep: #030303;
+            --glass: rgba(15, 15, 15, 0.7);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 50%, #1a0005 0%, #000000 70%);
+            transition: background 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        html {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="%23ff0044" stroke-width="1.5"/><circle cx="10" cy="10" r="1.5" fill="%23ff0044"/></svg>') 10 10, auto;
+        }
+
+        .code-font { font-family: 'Fira Code', monospace; }
+
+        .glass-card {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 0, 68, 0.3);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 0, 68, 0.05);
+            padding: 3rem;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 10;
+            margin: 2rem 0;
+        }
+        
+        .glass-card::before {
+            content: '';
+            position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+
+        .profile-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+        }
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 0, 68, 0.5);
+            padding: 4px;
+            background: rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+        .profile-aura {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            border: 1px solid var(--primary);
+            animation: ripple 2s infinite cubic-bezier(0, 0.2, 0.8, 1);
+            z-index: 1;
+        }
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .terminal-header {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .glitch-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            position: relative;
+            display: inline-block;
+            letter-spacing: -1px;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #030303; opacity: 0.8;
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -1px 0 #ff0044; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -1px 0 #00ffff; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); } 
+            5% { clip: rect(70px, 9999px, 90px, 0); }
+            10% { clip: rect(20px, 9999px, 40px, 0); }
+            100% { clip: rect(10px, 9999px, 30px, 0); }
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 1rem 0;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: #a0a0a0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        /* Estilo para los dos últimos elementos cuando son pares (My Web + TryHackMe) */
+        .link-grid .social-link:last-child:nth-child(even),
+        .link-grid .social-link:nth-last-child(2):nth-child(even) {
+            /* Mantienen el diseño normal de dos columnas */
+        }
+        
+        .social-link:hover {
+            background: rgba(255, 0, 68, 0.08);
+            border-color: rgba(255, 0, 68, 0.3);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .social-link i {
+            margin-right: 10px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        /* Dropdown menu para Pentest Notes */
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 0, 68, 0.4);
+            border-radius: 12px;
+            min-width: 200px;
+            z-index: 20;
+            margin-bottom: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .dropdown-content a {
+            color: #e0e0e0;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+        .dropdown-content a i {
+            width: 20px;
+            color: var(--primary);
+        }
+        .dropdown-content a:hover {
+            background: rgba(255, 0, 68, 0.2);
+            color: white;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        #custom-menu {
+            display: none; position: fixed; z-index: 9999;
+            background: rgba(10, 10, 10, 0.98);
+            border: 1px solid rgba(255, 0, 68, 0.3);
+            border-radius: 8px;
+            padding: 5px 0;
+            min-width: 180px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .menu-item {
+            padding: 10px 16px; font-size: 0.85rem; color: #ddd; cursor: pointer;
+            display: flex; align-items: center; font-family: 'Fira Code', monospace;
+            transition: background 0.2s;
+        }
+        .menu-item:hover { background: rgba(255, 0, 68, 0.2); color: #fff; }
+        .menu-item i { margin-right: 10px; color: var(--primary); width: 16px; text-align: center;}
+        
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #111; border: 1px solid var(--primary); color: #fff;
+            padding: 12px 24px; border-radius: 50px;
+            font-family: 'Fira Code', monospace; font-size: 0.9rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000; display: flex; align-items: center; gap: 10px;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        .cursor-dot {
+            position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+            background: var(--primary); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .flash-red {
+            animation: flashAnim 0.3s;
+        }
+        @keyframes flashAnim {
+            0% { background-color: var(--bg-deep); }
+            50% { background-color: rgba(255, 0, 0, 0.2); }
+            100% { background-color: var(--bg-deep); }
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 1rem 0;
+            }
+            .glass-card {
+                padding: 2rem;
+                width: 90%;
+                margin: 1rem 0;
+            }
+            .link-grid {
+                grid-template-columns: 1fr;
+            }
+            .dropdown-content {
+                position: fixed;
+                bottom: auto;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 80%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle text-green-500"></i>
+        <span id="toast-msg">Command Executed</span>
+    </div>
+
+    <main class="glass-card">
+        
+        <header class="profile-container mb-6">
+            <div class="profile-aura"></div>
+            <img src="https://raw.githubusercontent.com/AnonymousLas/laszzx/refs/heads/main/src/pagina1.png" alt="laszzx" class="profile-img" onerror="this.src='https://via.placeholder.com/140x140?text=LASZZX'">
+        </header>
+
+        <section class="terminal-header">
+            <div class="code-font text-xs text-red-500/80 mb-2 font-medium tracking-wide">
+                $ ./usr/bin/whoami
+            </div>
+            <h1 class="code-font glitch-text" data-text="laszzx">laszzx</h1>
+            
+            <div class="mt-4 flex items-center justify-center gap-3">
+                <span class="px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-400 font-bold uppercase tracking-wider">Red Team</span>
+                <span class="px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] text-gray-400 font-bold uppercase tracking-wider">Pentester</span>
+            </div>
+        </section>
+
+        <nav class="link-grid">
+            <a href="https://marco-antonio09.vercel.app/" target="_blank" class="social-link"><i class="fas fa-user"></i> My Web</a>
+            
+            <!-- Pentest Notes con dropdown -->
+            <div class="dropdown">
+                <div class="social-link" style="cursor: pointer;">
+                    <i class="fas fa-book-skull"></i> Pentest Notes <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: auto;"></i>
+                </div>
+                <div class="dropdown-content">
+                    <a href="https://pentester-101.gitbook.io/pentestingjr" target="_blank">
+                        <i class="fas fa-globe"></i> Pentesting Web
+                    </a>
+                    <a href="https://pentester-101.gitbook.io/marcos.las" target="_blank">
+                        <i class="fab fa-windows"></i> Active Directory (AD)
+                    </a>
+                    <a href="https://pentester-101.gitbook.io/bug-bunty" target="_blank">
+                        <i class="fas fa-bug"></i> Bug Bounty
+                    </a>
+                </div>
+            </div>
+            <a href="https://anonymouslas.github.io/" target="_blank" class="social-link"><i class="fas fa-rss"></i> Blog</a>
+            <a href="https://gzzcoo.com/CS" target="_blank" class="social-link"><i class="fas fa-terminal"></i> Cheatsheet</a>
+            <a href="https://app.hackthebox.com/users/2170484" target="_blank" class="social-link"><i class="fas fa-cube"></i> HackTheBox</a>
+            <a href="https://tryhackme.com/p/Matthewzx" target="_blank" class="social-link"><i class="fas fa-skull"></i> TryHackMe</a>
+            <a href="https://github.com/AnonymousLas" target="_blank" class="social-link"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://discord.com/users/1090368301684773024" target="_blank" class="social-link"><i class="fab fa-discord"></i> Discord</a>
+            <a href="https://x.com/FumaratoK786" target="_blank" class="social-link"><i class="fab fa-x-twitter"></i> Twitter</a>
+            <a href="https://www.linkedin.com/in/marco-antonio-ferroñan-melchor-a52022273" target="_blank" class="social-link"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </nav>
+
+        <footer class="text-center border-t border-white/5 pt-4">
+            <p class="code-font text-[10px] text-gray-600 mb-1">SECURE_CONNECTION_ESTABLISHED</p>
+            <p class="code-font text-[10px] text-gray-500">
+                CLIENT IP: <span id="ip-text" class="text-red-500 font-bold">scanning...</span>
+            </p>
+        </footer>
+
+    </main>
+
+    <div id="custom-menu">
+        <div class="px-4 py-2 text-[10px] text-gray-500 border-b border-gray-800 tracking-widest uppercase">System Commands</div>
+        
+        <div class="menu-item" onclick="execWhoami()">
+            <i class="fas fa-user-secret"></i> Run whoami
+        </div>
+        
+        <div class="menu-item" onclick="execReport()">
+            <i class="fas fa-envelope-open-text"></i> Contact / Report
+        </div>
+        
+        <div class="menu-item text-red-500 hover:text-red-500" onclick="execDenied()">
+            <i class="fas fa-ban"></i> Force Access
+        </div>
+    </div>
+
+    <script>
+        const cursorDot = document.getElementById('cursorDot');
+        let mouseX = 0, mouseY = 0, dotX = 0, dotY = 0;
+        document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        function animateCursor() {
+            dotX += (mouseX - dotX) * 0.2; dotY += (mouseY - dotY) * 0.2;
+            cursorDot.style.transform = `translate(${dotX}px, ${dotY}px)`;
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => document.getElementById('ip-text').innerText = data.ip)
+            .catch(() => document.getElementById('ip-text').innerText = "HIDDEN");
+
+        const menu = document.getElementById('custom-menu');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            menu.style.display = 'block';
+            
+            let x = e.clientX;
+            let y = e.clientY;
+            if (x + 200 > window.innerWidth) x = window.innerWidth - 200;
+            if (y + 150 > window.innerHeight) y = window.innerHeight - 150;
+
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+        });
+
+        document.addEventListener('click', () => menu.style.display = 'none');
+
+        function showToast(message, color = 'text-green-500') {
+            toastMsg.innerText = message;
+            toast.className = "toast show";
+            setTimeout(() => { toast.className = "toast"; }, 3000);
+        }
+
+        function execWhoami() {
+            showToast("uid=0(root) gid=0(root) groups=0(root)");
+        }
+
+        function execReport() {
+            const email = "jrgreco@proton.me";
+            navigator.clipboard.writeText(email).then(() => {
+                showToast("Email copied to clipboard!");
+                window.location.href = `mailto:${email}`;
+            });
+        }
+
+        function execDenied() {
+            document.body.classList.add('flash-red');
+            showToast("ACCESS DENIED: IP LOGGED", "text-red-500");
+            setTimeout(() => document.body.classList.remove('flash-red'), 300);
+        }
+
+        let titles = ["System Breach", "laszzx", "Red Team", "Access Granted"];
+        let i = 0;
+        setInterval(() => { document.title = titles[i++ % titles.length]; }, 2000);
+
+    </script>
+</body>
+</html>
